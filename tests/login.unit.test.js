@@ -51,7 +51,7 @@ describe('login controller', () => {
 
   it('should return 400 if user does not exist', async () => {
     const req = {
-      body: { emailid: 'unit@example.com' }
+      body: { emailid: 'unit@example.com',password:'pass123'}
     };
     User.findOne.mockResolvedValue(null);  
 

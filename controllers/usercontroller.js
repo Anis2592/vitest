@@ -1,7 +1,7 @@
 import User from '../models/Employee.js';
 import Joi from 'joi';
 import mongoose from 'mongoose';
-// JOI schema for validation
+ 
 const userValidationSchema = Joi.object({
   name: Joi.string()
     .min(2)
@@ -66,7 +66,7 @@ const userValidationSchema = Joi.object({
     .label('jobTitle'),
 
   paymentMethod: Joi.string()
-    .valid('Cash', 'Bank Transfer', 'Cheque', 'UPI') // Example values — adjust as needed
+    .valid('Cash', 'Bank Transfer', 'Cheque', 'UPI')  
     .required()
     .messages({
       'any.only': 'Payment method must be one of Cash, Bank Transfer, Cheque, or UPI'
@@ -160,20 +160,7 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving user data',error: err.message });
   }
 };
-// export const getUserById = async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id); 
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     res.status(200).json(user);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Error retrieving user data", error });
-//   }
-// };
-
-// Get all users
+ 
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();

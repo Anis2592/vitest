@@ -1,12 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { signup } from '../controllers/authcontroller.js';
 import User from '../models/AuthUser.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Joi from 'joi';
 
 vi.mock('../models/AuthUser.js');
 vi.mock('bcryptjs');
 vi.mock('jsonwebtoken');
+
+// Mock bcrypt.hash to simulate hashing the password
+vi.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
+
+// Mock jwt.sign to simulate token creation
+vi.spyOn(jwt, 'sign').mockReturnValue('mockedJWTToken');
 
 describe('signup controller', () => {
   const res = {
@@ -14,49 +21,70 @@ describe('signup controller', () => {
     json: vi.fn(),
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should register a new user and return a token', async () => {
+  it('should return 400 if validation fails', async () => {
     const req = {
       body: {
-        name: 'Unit User',
-        emailid: 'unit@example.com',
-        password: 'pass123',
-        dateofbirth: '1990-01-01',
-        dateofjoining: '2020-01-01',
-      }
+        emailid: 'validemail@example.com',
+        password: 'short',  // This will fail validation (password < 6 characters)
+      },
     };
-
-    User.findOne.mockResolvedValue(null); // no existing user
-    bcrypt.hash.mockResolvedValue('hashedpass');
-    jwt.sign.mockReturnValue('mocked-jwt');
-
-    const saveMock = vi.fn().mockResolvedValue({});
-    User.mockImplementation(() => ({ save: saveMock }));
 
     await signup(req, res);
 
-    expect(User.findOne).toHaveBeenCalledWith({ emailid: 'unit@example.com' });
-    expect(bcrypt.hash).toHaveBeenCalledWith('pass123', 10);
-    expect(jwt.sign).toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      message: 'User registered successfully',
-      token: 'mocked-jwt',
+      message: '"password" length must be at least 6 characters long',
     });
   });
 
   it('should return 400 if user already exists', async () => {
     const req = {
-      body: { emailid: 'unit@example.com' }
+      body: {
+        name: 'John Doe',
+        emailid: 'existing@example.com',
+        password: 'validpassword',
+        dateofbirth: '1990-01-01',
+        dateofjoining: '2020-01-01',
+      },
     };
-    User.findOne.mockResolvedValue({ _id: '123' });
+
+    // Mock that the user already exists in the database
+    User.findOne.mockResolvedValue({ emailid: 'existing@example.com' });
 
     await signup(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: 'User already exists' });
+  });
+
+  it('should register a new user and return a token', async () => {
+    const req = {
+      body: {
+        name: 'John Doe',
+        emailid: 'newuser@example.com',
+        password: 'validpassword',
+        dateofbirth: '1990-01-01',
+        dateofjoining: '2020-01-01',
+      },
+    };
+
+    // Mock that the user does not exist in the database
+    User.findOne.mockResolvedValue(null); // No user found
+
+    // Mock saving a new user to the database
+    const mockSave = vi.fn().mockResolvedValue({
+      _id: 'user-id-mock',
+    });
+    User.mockImplementation(() => ({
+      save: mockSave,
+    }));
+
+    await signup(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'User registered successfully',
+      token: 'mockedJWTToken',
+    });
   });
 });

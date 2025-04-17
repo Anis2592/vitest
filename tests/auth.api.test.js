@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
  
 import authRoutes from '../routes/auth.js';  
-import { authenticateToken } from '../middelware/authmiddleware.js';
+ 
 
 const app = express();
 app.use(express.json());
@@ -59,6 +59,19 @@ describe('Auth & User E2E Tests', () => {
   });
 
   it('should get the user profile', async () => {
+    await request(app).post('/api/auth/signup').send({
+      name: 'Test User',
+      emailid: 'test@example.com',
+      password: 'Test1234!',
+      dateofbirth: '1990-01-01',
+      dateofjoining: '2023-01-01',
+    });
+
+    const loginRes = await request(app).post('/api/auth/login').send({
+      emailid: 'test@example.com',
+      password: 'Test1234!',
+    });
+    token = loginRes.body.token;
     const res = await request(app)
       .get('/api/auth/profile')
       .set('Authorization', `Bearer ${token}`);

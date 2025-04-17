@@ -1,8 +1,28 @@
 import User from '../models/AuthUser.js';
-import bcrypt from 'bcryptjs';    
-import jwt from 'jsonwebtoken';    
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import Joi from 'joi';
+
+// Inline Joi schemas
+const signupSchema = Joi.object({
+  name: Joi.string().min(3).max(50).allow(),
+  emailid: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+  dateofbirth: Joi.date().allow(),
+  dateofjoining: Joi.date().allow()
+});
+
+const loginSchema = Joi.object({
+  emailid: Joi.string().email().required(),
+  password: Joi.string().min(6).required()
+});
 
 export const signup = async (req, res) => {
+  const { error } = signupSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
   const { name, emailid, password, dateofbirth, dateofjoining } = req.body;
 
   try {
@@ -23,7 +43,11 @@ export const signup = async (req, res) => {
 
     await newUser.save();
 
-    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET || 'testsecret', { expiresIn: '1h' });
+    const token = jwt.sign(
+      { userId: newUser._id },
+      process.env.JWT_SECRET || 'testsecret',
+      { expiresIn: '1h' }
+    );
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -36,6 +60,11 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  const { error } = loginSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
   const { emailid, password } = req.body;
 
   try {
@@ -49,7 +78,11 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'testsecret', { expiresIn: '1h' });
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET || 'testsecret',
+      { expiresIn: '1h' }
+    );
 
     res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
