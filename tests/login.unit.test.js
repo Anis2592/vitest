@@ -30,11 +30,11 @@ describe('login controller', () => {
       _id: '123',
       emailid: 'unit@example.com',
       password: 'hashedpass',
-      comparePassword: vi.fn().mockResolvedValue(true), // Mock comparePassword method
+      comparePassword: vi.fn().mockResolvedValue(true),  
     };
 
-    User.findOne.mockResolvedValue(userMock); // user exists
-    bcrypt.compare.mockResolvedValue(true); // password match
+    User.findOne.mockResolvedValue(userMock);  
+    bcrypt.compare.mockResolvedValue(true);  
     jwt.sign.mockReturnValue('mocked-jwt');
 
     await login(req, res);
@@ -53,7 +53,7 @@ describe('login controller', () => {
     const req = {
       body: { emailid: 'unit@example.com' }
     };
-    User.findOne.mockResolvedValue(null); // user doesn't exist
+    User.findOne.mockResolvedValue(null);  
 
     await login(req, res);
 
@@ -70,10 +70,10 @@ describe('login controller', () => {
       _id: '123',
       emailid: 'unit@example.com',
       password: 'hashedpass',
-      comparePassword: vi.fn().mockResolvedValue(false), // password doesn't match
+      comparePassword: vi.fn().mockResolvedValue(false),  
     };
 
-    User.findOne.mockResolvedValue(userMock); // user exists
+    User.findOne.mockResolvedValue(userMock);  
 
     await login(req, res);
 

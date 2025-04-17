@@ -1,4 +1,4 @@
-// tests/auth.e2e.test.js
+ 
 import { describe, it, beforeAll, afterAll, expect } from 'vitest';
 import request from 'supertest';
 import mongoose from 'mongoose';
@@ -6,9 +6,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
-
-// Load routes and middleware
-import authRoutes from '../routes/auth.js'; // adjust path if needed
+ 
+import authRoutes from '../routes/auth.js';  
 import { authenticateToken } from '../middelware/authmiddleware.js';
 
 const app = express();

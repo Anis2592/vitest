@@ -1,4 +1,4 @@
-// tests/auth.integration.test.js
+ 
 import { describe, it, beforeAll, afterAll, expect, vi } from 'vitest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -29,7 +29,7 @@ describe('Auth Controller Integration Tests', () => {
       }
     };
 
-    // Mock res object
+   
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn()
